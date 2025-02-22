@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="buffon.css">
+
+<!-- Page title -->
+<title>Buffon's Needle to estimate Pi</title>
+
+</head>
+<!-- <body class="il-page"> -->
+<body class="resources">
+<H2 style="text-align:center;">Buffon's Needle to estimate &pi;</H2>
+
+<div class="fullimg"><img src="display.png" alt="Illustration of Buffon's Needle"></div>
+
+
+<H2><A NAME="simulation"></A>Simulation</H2>
+
+
+<div id="appletContainer">
+
+    <div class="appletCanvasContainer">
+        <canvas id="appletCanvas" width="1" height="1">We're sorry, your browser does not support HTML5 Canvas...</canvas>
+        <div class="appletCanvasMessage" id="appletCanvasOverlay" style="margin-top:-32px;">
+        <img src="throbber.gif" alt="Loading, please wait...">
+        <p id="appletCanvasOverlayText"></p>
+    </div>
+</div>
+
+<form id="buffonDropForm" action="#" method="get">
+    <input id="buffonDrop1" type="button" value="Drop 1">
+    <input id="buffonDrop10" type="button" value="Drop 10">
+    <input id="buffonDrop100" type="button" value="Drop 100">
+    <input id="buffonDrop1000" type="button" value="Drop 1000">
+    <label id="buffonDropAmountBoxLabel" for="buffonDropAmountBox">Drop Amount: </label><input id="buffonDropAmountBox" type="text">
+    <input id="buffonDropAmount" type="submit" value="Drop">
+</form>
+
+<table class="results">
+    <tbody>
+        <tr><th scope="column">Measurement</th><th scope="column">Value</th></tr>
+        <tr><td>Needle Scale</td><td id="buffonNumScale"></td></tr>
+        <tr><td>Extent = Perimeter / Greatest Vertex Distance</td><td id="buffonNumExtent"></td></tr>
+        <tr><td>Number of Drops</td><td id="buffonNumDrops"></td></tr>
+        <tr><td>Number of Hits</td><td id="buffonNumHits"></td></tr>
+        <tr><td>Drops / Hits</td><td id="buffonNumRatio"></td></tr>
+        <tr><td>&pi; &#x2248; 2 * Extent * Scale * Drops / Hits</td><td id="buffonNumPi"></td></tr>
+    </tbody>
+</table>
+
+<form id="buffonResetForm" action="#" method="get"><label id="buffonScaleBoxLabel" for="buffonScaleBox">Needle Scale</label><input id="buffonScaleBox" type="text" value="1"><input id="buffonReset" type="submit" value="Start Over" /></form>
+<div tabindex="0" id="buffonScaleScroll" class="appletScroll"></div>
+<div class="formset">
+    <p>Drop Shape</p>
+    <form id="buffonDropLine" action="#" method="get"><input type="submit" id="buffonDropLineButton" value="Straight Needles"></form>
+    <form id="buffonDropBentV" action="#" method="get"><input type="submit" id="buffonDropBentVButton" value="V-Shapes"></form>
+    <form id="buffonDropBentW" action="#" method="get"><input type="submit" id="buffonDropBentWButton" value="W-Shapes"></form>
+    <form id="buffonDropTriangle" action="#" method="get"><input type="submit" id="buffonDropTriangleButton" value="3-4-5 Triangles"></form>
+    <form id="buffonDropCircle" action="#" method="get"><input type="submit" id="buffonDropCircleButton" value="Circles"></form>
+    <form id="buffonDrawCustom" action="#" method="get"><input type="submit" id="buffonDrawCustomButton" value="Draw Custom Drop Shape"></form>
+</div>
+
+<div id="polygonDrawContainer" style="display:none;">
+    <div class="appletCanvasContainer">
+        <canvas id="polygonDrawCanvas" width="1" height="1">We're sorry, your browser does not support HTML5 Canvas...</canvas>
+        </div>
+        <div class="formset">
+        <form id="polygonDrawReset" action="#" method="get"><input type="submit" id="polygonDrawResetButton" value="Reset" disabled /></form>
+        <form id="polygonDrawSubmit" action="#" method="get"><input type="submit" id="polygonDrawSubmitButton" value="Use This Shape" disabled /></form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+"use strict";
+
+function tryWorker(name)
+{
+    try
+    {
+        var worker = new Worker(name + 'Worker.js.php');
+        var w = webworkers[name];
+        worker.addEventListener('message', function(e) { w.callback(e.data); }, false);
+        w.execute = function (data, callback) { this.callback = callback; this.worker.postMessage(data); };
+        w.worker = worker;
+    }
+    catch (e)
+    {
+    }
+}
+
+var webworkers =
+{
+    "needle" : { "execute" : function(data, callback) { callback(workerEntryPoint_needle(data)); } }
+};
+
+if (typeof Worker !== "undefined")
+{
+    tryWorker("needle");
+}
+</script>
+
+<!-- Page-specific scripts -->
+<script type="text/javascript" src="needleWorker.js.php"></script>
+<script type="text/javascript" src="buffon.js"></script>
+
+</body>
+</html>
