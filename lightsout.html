@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lights Out</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #grid-container {
+            display: grid;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+        }
+        .grid {
+            display: grid;
+            gap: 8px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: yellow;
+            border: 1px solid black;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .off {
+            background-color: black;
+        }
+        .solution {
+            border: 3px solid red;
+        }
+        .active-solve {
+            background-color: lightgreen;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lights Out Game</h1>
+    <label for="grid-size">Grid Size:</label>
+    <select id="grid-size">
+        <option value="4">4x4</option>
+        <option value="5">5x5</option>
+        <option value="6">6x6</option>
+        <option value="7">7x7</option>
+        <option value="8">8x8</option>
+        <option value="9">9x9</option>
+    </select>
+    <button onclick="generateGrid()">Change Grid Size</button>
+    <div id="grid-container"></div>
+    <p>Moves: <span id="move-counter">0</span></p>
+    <button onclick="resetGame()">Reset</button>
+    <button onclick="randomizeGrid()">Generate Random</button>
+    <button onclick="checkSolvability()">Check Solvability</button>
+    <button id="solve-button" onclick="toggleSolve()">Solve</button>
+
+    <script>
+        let gridSize = 5;
+        let grid = [];
+        let moves = 0;
+        let initialGrid = [];
+        let solutionMoves = [];
+        let solveMode = false;
+
+        function generateGrid() {
+            gridSize = parseInt(document.getElementById("grid-size").value);
+            grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(1));
+            initialGrid = JSON.parse(JSON.stringify(grid));
+            moves = 0;
+            solutionMoves = [];
+            solveMode = false;
+            updateGrid();
+        }
+
+        function updateGrid() {
+            const container = document.getElementById("grid-container");
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${gridSize}, 50px)`;
+            container.style.gridTemplateRows = `repeat(${gridSize}, 50px)`;
+            container.classList.add("grid");
+
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    if (grid[i][j] === 0) cell.classList.add("off");
+                    if (solveMode && solutionMoves.includes(i * gridSize + j)) {
+                        cell.classList.add("solution");
+                    }
+                    cell.addEventListener("click", () => {
+                        toggleLights(i, j);
+                        if (solveMode) updateSolution();
+                    });
+                    container.appendChild(cell);
+                }
+            }
+            document.getElementById("move-counter").innerText = moves;
+        }
+
+        function toggleLights(i, j) {
+            const directions = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
+            for (let [dx, dy] of directions) {
+                let x = i + dx, y = j + dy;
+                if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                    grid[x][y] = 1 - grid[x][y];
+                }
+            }
+            moves++;
+            updateGrid();
+        }
+
+        function resetGame() {
+            grid = JSON.parse(JSON.stringify(initialGrid));
+            moves = 0;
+            solutionMoves = [];
+            solveMode = false;
+            document.getElementById("solve-button").classList.remove("active-solve");
+            updateGrid();
+        }
+
+        function randomizeGrid() {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    grid[i][j] = Math.random() < 0.5 ? 1 : 0;
+                }
+            }
+            initialGrid = JSON.parse(JSON.stringify(grid));
+            moves = 0;
+            solutionMoves = [];
+            solveMode = false;
+            document.getElementById("solve-button").classList.remove("active-solve");
+            updateGrid();
+        }
+
+        function createCoefficientMatrix() {
+            let n = gridSize * gridSize;
+            let matrix = Array.from({ length: n }, () => Array(n).fill(0));
+
+            const directions = [
+                [0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]
+            ];
+
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    let index = row * gridSize + col;
+                    directions.forEach(([dx, dy]) => {
+                        let newRow = row + dx, newCol = col + dy;
+                        if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
+                            let newIndex = newRow * gridSize + newCol;
+                            matrix[index][newIndex] = 1;
+                        }
+                    });
+                }
+            }
+            return matrix;
+        }
+
+        function gaussianElimination(matrix, vector) {
+            let n = matrix.length;
+            let solution = Array(n).fill(0);
+
+            for (let col = 0; col < n; col++) {
+                let pivotRow = col;
+                while (pivotRow < n && matrix[pivotRow][col] === 0) pivotRow++;
+
+                if (pivotRow === n) continue;
+
+                if (pivotRow !== col) {
+                    [matrix[col], matrix[pivotRow]] = [matrix[pivotRow], matrix[col]];
+                    [vector[col], vector[pivotRow]] = [vector[pivotRow], vector[col]];
+                }
+
+                for (let row = 0; row < n; row++) {
+                    if (row !== col && matrix[row][col] === 1) {
+                        for (let k = col; k < n; k++) matrix[row][k] ^= matrix[col][k];
+                        vector[row] ^= vector[col];
+                    }
+                }
+            }
+
+            for (let row = 0; row < n; row++) {
+                if (matrix[row].every(val => val === 0) && vector[row] === 1) {
+                    return null;
+                }
+            }
+
+            for (let row = n - 1; row >= 0; row--) {
+                solution[row] = vector[row];
+                for (let col = row + 1; col < n; col++) {
+                    solution[row] ^= matrix[row][col] & solution[col];
+                }
+            }
+            return solution;
+        }
+
+        function checkSolvability() {
+            let n = gridSize * gridSize;
+            let coefficientMatrix = createCoefficientMatrix();
+            let stateVector = grid.flat();
+
+            let matrix = coefficientMatrix.map(row => [...row]);
+            let vector = [...stateVector];
+
+            if (gaussianElimination(matrix, vector)) {
+                alert("This board is solvable!");
+            } else {
+                alert("This board is not solvable!");
+            }
+        }
+
+        function updateSolution() {
+            let n = gridSize * gridSize;
+            let coefficientMatrix = createCoefficientMatrix();
+            let stateVector = grid.flat();
+
+            let matrix = coefficientMatrix.map(row => [...row]);
+            let vector = [...stateVector];
+
+            let solution = gaussianElimination(matrix, vector);
+            solutionMoves = solution ? solution.map((val, index) => (val === 1 ? index : -1)).filter(val => val !== -1) : [];
+            updateGrid();
+        }
+
+        function toggleSolve() {
+            solveMode = !solveMode;
+            document.getElementById("solve-button").classList.toggle("active-solve", solveMode);
+            if (solveMode) updateSolution();
+            else solutionMoves = [];
+            updateGrid();
+        }
+
+        generateGrid();
+    </script>
+</body>
+</html>
