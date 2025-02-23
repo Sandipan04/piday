@@ -14,14 +14,15 @@
             justify-content: center;
             align-items: center;
             margin: 20px auto;
+            padding: 5px;
         }
         .grid {
             display: grid;
             gap: 8px;
+            padding: 5px;
         }
         .cell {
-            width: 50px;
-            height: 50px;
+            aspect-ratio: 1 / 1;
             background-color: yellow;
             border: 1px solid black;
             border-radius: 5px;
@@ -63,8 +64,6 @@
     <br>
     <button onclick="checkSolvability()">Check Solvability</button>
     <button id="solve-button" onclick="toggleSolve()">Solve</button>
-    
-    
 
     <script>
         let gridSize = 5;
@@ -89,14 +88,17 @@
         function updateGrid() {
             const container = document.getElementById("grid-container");
             container.innerHTML = '';
-            container.style.gridTemplateColumns = `repeat(${gridSize}, 50px)`;
-            container.style.gridTemplateRows = `repeat(${gridSize}, 50px)`;
+            let cellSize = Math.min(50, Math.floor(window.innerWidth / (gridSize * 1.3)));
+            container.style.gridTemplateColumns = `repeat(${gridSize}, ${cellSize}px)`;
+            container.style.gridTemplateRows = `repeat(${gridSize}, ${cellSize}px)`;
             container.classList.add("grid");
 
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
                     const cell = document.createElement("div");
                     cell.classList.add("cell");
+                    cell.style.width = `${cellSize}px`;
+                    cell.style.height = `${cellSize}px`;
                     if (grid[i][j] === 0) cell.classList.add("off");
                     if (solveMode && solutionMoves.includes(i * gridSize + j)) {
                         cell.classList.add("solution");
@@ -259,6 +261,7 @@
             updateGrid();
         }
 
+        window.addEventListener("resize", updateGrid);
         generateGrid();
     </script>
 </body>
