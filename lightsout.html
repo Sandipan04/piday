@@ -53,12 +53,18 @@
         <option value="9">9x9</option>
     </select>
     <button onclick="generateGrid()">Change Grid Size</button>
+    <button onclick="randomizeGrid()">Generate Random</button>
     <div id="grid-container"></div>
     <p>Moves: <span id="move-counter">0</span></p>
+    <button onclick="undoMove()">Undo</button>
     <button onclick="resetGame()">Reset</button>
-    <button onclick="randomizeGrid()">Generate Random</button>
+    <button onclick="resetAllLightsOn()">Reset to All Lights On</button>
+    <br>
+    <br>
     <button onclick="checkSolvability()">Check Solvability</button>
     <button id="solve-button" onclick="toggleSolve()">Solve</button>
+    
+    
 
     <script>
         let gridSize = 5;
@@ -67,6 +73,7 @@
         let initialGrid = [];
         let solutionMoves = [];
         let solveMode = false;
+        let moveHistory = [];
 
         function generateGrid() {
             gridSize = parseInt(document.getElementById("grid-size").value);
@@ -75,6 +82,7 @@
             moves = 0;
             solutionMoves = [];
             solveMode = false;
+            moveHistory = [];
             updateGrid();
         }
 
@@ -94,6 +102,7 @@
                         cell.classList.add("solution");
                     }
                     cell.addEventListener("click", () => {
+                        moveHistory.push(JSON.parse(JSON.stringify(grid)));
                         toggleLights(i, j);
                         if (solveMode) updateSolution();
                     });
@@ -232,6 +241,21 @@
             document.getElementById("solve-button").classList.toggle("active-solve", solveMode);
             if (solveMode) updateSolution();
             else solutionMoves = [];
+            updateGrid();
+        }
+
+        function undoMove() {
+            if (moveHistory.length > 0) {
+                grid = moveHistory.pop();
+                moves = Math.max(0, moves - 1);
+                updateGrid();
+            }
+        }
+
+        function resetAllLightsOn() {
+            grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(1));
+            moves = 0;
+            moveHistory = [];
             updateGrid();
         }
 
