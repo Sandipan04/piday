@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frog Chessboard Game</title>
+    <link rel="stylesheet" href="frogchess.css">
+</head>
+<body>
+    <h1>Frog Chessboard Game</h1>
+    <div id="player-info">
+        <div>
+            <label for="player1-name">Player 1 Name:</label>
+            <input type="text" id="player1-name" placeholder="Player 1">
+            <span id="player1-score">Score: 0</span>
+        </div>
+        <div>
+            <label for="player2-name">Player 2 Name:</label>
+            <input type="text" id="player2-name" placeholder="Player 2">
+            <span id="player2-score">Score: 0</span>
+        </div>
+    </div>
+    <div id="game-board"></div>
+    <div id="controls">
+        <button id="move-right">Move Right</button>
+        <button id="move-down">Move Down</button>
+        <button id="move-diagonal">Move Diagonal</button>
+        <button id="undo">Undo</button>
+        <button id="reset">Reset</button>
+    </div>
+    <div id="move-history">
+        <h2>Move History</h2>
+        <ul id="history-list"></ul>
+    </div>
+    <p id="status"></p>
+    <script src="frogchess.js"></script>
+</body>
+</html>
