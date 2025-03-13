@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trapped Knight</title>
+    <style>
+        /* General Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #000; /* Dark Mode Background */
+            color: #00ff00; /* Glowing Green Text */
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .legend {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            grid-template-rows: repeat(5, 50px);
+            border: 2px solid #00ff00;
+        }
+
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border: 1px solid #00ff00;
+            font-size: 18px;
+            background-color: black;
+            color: #00ff00;
+        }
+
+        .current-position { background-color: yellow !important; color: black !important; }
+        .visited-move { background-color: red !important; }
+        .valid-move { background-color: green !important; }
+        .unvisited-move { background-color: gray !important; }
+
+        .movement-container {
+            width: 300px;
+            height: 100px;
+            overflow-y: auto;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            background-color: black;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="legend">
+        <b>Legend:</b> <span style="color:red;">Red</span> - Visited | 
+        <span style="color:gray;">Gray</span> - Possible Move | 
+        <span style="color:green;">Green</span> - Next Move | 
+        <span style="color:yellow;">Yellow</span> - Current Position
+    </div>
+    <div class="controls">
+        <button onclick="startAnimation()">Start</button>
+        <button onclick="pauseAnimation()">Pause</button>
+        <button onclick="finishAnimation()">Finish</button>
+    </div>
+    <div class="container">
+        <div class="chessboard" id="chessboard"></div>
+    </div>
+    <div class="movement-container">
+        <div class="movement-history" id="movement-history">Movement: </div>
+    </div>
+    <script>
+        const chessboard = document.getElementById("chessboard");
+        const movementHistory = document.getElementById("movement-history");
+        let knightX = 0, knightY = 0;
+        let board = {};
+        let visited = new Set();
+        let moveSequence = [];
+        const moves = [[2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1], [-1, -2], [1, -2], [2, -1]];
+        let interval;
+
+        function generateBoard() {
+            let num = 1;
+            let x = 0, y = 0;
+            board[`${x},${y}`] = num;
+            let directions = [[0,1],[1,0],[0,-1],[-1,0]];
+            let step = 1, dirIndex = 0;
+            while (num < 10000) {
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < step; j++) {
+                        x += directions[dirIndex][0];
+                        y += directions[dirIndex][1];
+                        num++;
+                        board[`${x},${y}`] = num;
+                    }
+                    dirIndex = (dirIndex + 1) % 4;
+                }
+                step++;
+            }
+        }
+
+        function updateView() {
+            chessboard.innerHTML = "";
+            let possibleMoves = moves.map(([dx, dy]) => [knightX + dx, knightY + dy])
+                .filter(([x, y]) => board.hasOwnProperty(`${x},${y}`) && !visited.has(`${x},${y}`));
+
+            // Find the lowest-numbered valid move
+            let validMove = possibleMoves.length > 0 
+                ? possibleMoves.reduce((minMove, move) => 
+                    board[`${move[0]},${move[1]}`] < board[`${minMove[0]},${minMove[1]}`] ? move : minMove) 
+                : null;
+
+            for (let i = -2; i <= 2; i++) {
+                for (let j = -2; j <= 2; j++) {
+                    let div = document.createElement("div");
+                    div.classList.add("square");
+                    let value = board[`${knightX+i},${knightY+j}`] || "";
+                    
+                    if (i === 0 && j === 0) {
+                        div.innerHTML = "♞";
+                        div.classList.add("current-position"); // Highlight knight's position in yellow
+                    } else {
+                        div.innerHTML = value;
+                    }
+
+                    if (validMove && knightX + i === validMove[0] && knightY + j === validMove[1]) {
+                        div.classList.add("valid-move");
+                    } else if (visited.has(`${knightX+i},${knightY+j}`)) {
+                        div.classList.add("visited-move");
+                    } else if (possibleMoves.some(([x, y]) => x === knightX + i && y === knightY + j)) {
+                        div.classList.add("unvisited-move");
+                    }
+
+                    chessboard.appendChild(div);
+                }
+            }
+            
+            movementHistory.innerText = `Movement: ${moveSequence.join(" -> ")} (Total Steps: ${moveSequence.length})`;
+
+            // Auto-scroll movement history
+            const movementContainer = document.querySelector(".movement-container");
+            movementContainer.scrollTop = movementContainer.scrollHeight;
+        }
+
+        function moveKnight() {
+            visited.add(`${knightX},${knightY}`);
+            moveSequence.push(board[`${knightX},${knightY}`]);
+            let possibleMoves = moves.map(([dx, dy]) => [knightX + dx, knightY + dy])
+                .filter(([x, y]) => !visited.has(`${x},${y}`) && board.hasOwnProperty(`${x},${y}`))
+                .sort((a, b) => board[`${a[0]},${a[1]}`] - board[`${b[0]},${b[1]}`]);
+            
+            if (possibleMoves.length === 0) {
+                return false;
+            }
+
+            [knightX, knightY] = possibleMoves[0];
+            updateView();
+            return true;
+        }
+
+        function startAnimation() {
+            if (!interval) {
+                interval = setInterval(moveKnight, 500);
+            }
+        }
+
+        function pauseAnimation() {
+            clearInterval(interval);
+            interval = null;
+        }
+
+        function finishAnimation() {
+            clearInterval(interval);
+            while (moveKnight()) {}
+        }
+
+        generateBoard();
+        updateView();
+    </script>
+</body>
+</html>
+
+

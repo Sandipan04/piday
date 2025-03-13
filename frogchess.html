@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frog Chessboard Game</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            animation: fadeIn 2s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .header {
+            font-size: 2rem;
+            text-transform: uppercase;
+            padding: 20px;
+            border-bottom: 1px solid #444;
+        }
+
+        #player-info {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-bottom: 20px;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            grid-template-rows: repeat(8, 40px);
+            gap: 2px;
+            margin: 20px auto;
+            padding: 2px;
+            max-width: 330px;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #00ff00;
+        }
+
+        .white { background-color: #111; }
+        .black { background-color: #222; }
+
+        .frog {
+            width: 30px;
+            height: 30px;
+            background-color: #00ff00;
+            border-radius: 50%;
+        }
+
+        button {
+            background: black;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #00ff00;
+            color: black;
+        }
+
+        #move-history {
+            margin-top: 20px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="header">Frog Chessboard Game</div>
+        <div id="player-info">
+            <div>
+                <label for="player1-name">Player 1 Name:</label>
+                <input type="text" id="player1-name" placeholder="Player 1">
+                <span id="player1-score">Score: 0</span>
+            </div>
+            <div>
+                <label for="player2-name">Player 2 Name:</label>
+                <input type="text" id="player2-name" placeholder="Player 2">
+                <span id="player2-score">Score: 0</span>
+            </div>
+        </div>
+        <div id="game-board"></div>
+        <div id="controls">
+            <button id="move-right">Move Right</button>
+            <button id="move-down">Move Down</button>
+            <button id="move-diagonal">Move Diagonal</button>
+            <button id="undo">Undo</button>
+            <button id="reset">Reset</button>
+        </div>
+        <div id="move-history">
+            <h2>Move History</h2>
+            <ul id="history-list"></ul>
+        </div>
+        <p id="status"></p>
+    </div>
+    <script>
+        const board = document.getElementById('game-board');
+        const status = document.getElementById('status');
+        const moveRightBtn = document.getElementById('move-right');
+        const moveDownBtn = document.getElementById('move-down');
+        const moveDiagonalBtn = document.getElementById('move-diagonal');
+        const undoBtn = document.getElementById('undo');
+        const resetBtn = document.getElementById('reset');
+        const historyList = document.getElementById('history-list');
+        const player1NameInput = document.getElementById('player1-name');
+        const player2NameInput = document.getElementById('player2-name');
+
+        let frogPosition = { x: 0, y: 0 };
+        let moveHistory = [];
+        let currentPlayer = 1;
+
+        function createBoard() {
+            board.innerHTML = '';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell', (row + col) % 2 === 0 ? 'white' : 'black');
+                    cell.id = `cell-${row}-${col}`;
+                    board.appendChild(cell);
+                }
+            }
+            placeFrog();
+        }
+
+        function placeFrog() {
+            document.querySelectorAll('.frog').forEach(frog => frog.remove());
+            const frog = document.createElement('div');
+            frog.classList.add('frog');
+            document.getElementById(`cell-${frogPosition.y}-${frogPosition.x}`).appendChild(frog);
+        }
+
+        function moveFrog(dx, dy) {
+            const newX = frogPosition.x + dx;
+            const newY = frogPosition.y + dy;
+            if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+                moveHistory.push({ x: frogPosition.x, y: frogPosition.y, player: currentPlayer });
+                frogPosition.x = newX;
+                frogPosition.y = newY;
+                placeFrog();
+                updateHistory();
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+            }
+        }
+
+        function updateHistory() {
+            historyList.innerHTML = '';
+            moveHistory.forEach((move, index) => {
+                const playerName = move.player === 1 ? player1NameInput.value || 'Player 1' : player2NameInput.value || 'Player 2';
+                const li = document.createElement('li');
+                li.textContent = `Move ${index + 1}: ${playerName} moved to (${move.x}, ${move.y})`;
+                historyList.appendChild(li);
+            });
+        }
+
+        undoBtn.addEventListener('click', () => {
+            if (moveHistory.length > 0) {
+                const lastMove = moveHistory.pop();
+                frogPosition.x = lastMove.x;
+                frogPosition.y = lastMove.y;
+                placeFrog();
+                updateHistory();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            frogPosition = { x: 0, y: 0 };
+            moveHistory = [];
+            createBoard();
+            updateHistory();
+        });
+
+        moveRightBtn.addEventListener('click', () => moveFrog(1, 0));
+        moveDownBtn.addEventListener('click', () => moveFrog(0, 1));
+        moveDiagonalBtn.addEventListener('click', () => moveFrog(1, 1));
+        createBoard();
+    </script>
+</body>
+</html>
