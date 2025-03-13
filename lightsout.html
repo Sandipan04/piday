@@ -5,16 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lights Out</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #111;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
             text-align: center;
         }
+
+        .content {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .header {
+            font-size: 2rem;
+            text-transform: uppercase;
+            padding: 20px;
+            border-bottom: 2px solid #0f0;
+            margin-bottom: 20px;
+        }
+
         #grid-container {
             display: grid;
             justify-content: center;
-            align-items: center;
+            gap: 5px;
             margin: 20px auto;
-            padding: 5px;
+            padding: 10px;
+            background: #222;
+            border-radius: 10px;
         }
         .grid {
             display: grid;
@@ -23,22 +45,46 @@
         }
         .cell {
             aspect-ratio: 1 / 1;
-            background-color: yellow;
-            border: 1px solid black;
+            background-color: #0f0;
+            border: 2px solid #0f0;
             border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
         }
+
+        .cell:hover {
+            transform: scale(1.1);
+        }
+
         .off {
-            background-color: black;
+            background-color: #222;
+            border-color: #444;
         }
         .solution {
-            border: 3px solid red;
+            border: 2px solid red;
         }
         .active-solve {
             background-color: lightgreen;
+        }
+        
+        button {
+            background: #111;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 12px;
+            margin: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #0f0;
+            color: #111;
         }
     </style>
 </head>

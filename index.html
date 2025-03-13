@@ -3,42 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Day 2025 - Games and Simulations</title>
+    <title>Pi Day 2025- Games & Simulations</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        .game-list {
-            list-style: none;
+        /* General Reset */
+        body, html {
+            margin: 0;
             padding: 0;
+            height: 100%;
+            background: #000; /* Dark Mode Background */
+            color: #00ff00; /* Glowing Green Text */
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
         }
-        .game-list li {
-            margin: 10px 0;
+
+        /* Matrix Animation */
+        .matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 2;
         }
-        .footer {
-            margin-top: 30px;
-            font-size: 14px;
+
+        canvas {
+            display: block;
+        }
+
+        /* Welcome Text */
+        .welcome {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 3em;
+            z-index: 3;
+            opacity: 1;
+            animation: fadeOut 1.5s ease-in-out forwards 5s;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Main Content */
+        .content {
+            display: none;
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+            animation: fadeIn 2s ease-in-out forwards;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            font-size: 2rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid #444;
+        }
+
+        .quote-container {
+            margin: 30px auto;
+            padding: 20px;
+            border-left: 2px solid #00ff00;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.2);
+            max-width: 800px;
+            color: #00ff00;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .quote-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 255, 0, 0.8);
+        }
+
+        .quote {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid #00ff00;
+            animation: typing 4s steps(40, end), blink-caret 0.5s step-end infinite;
+        }
+
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes blink-caret {
+            from, to {
+                border-color: transparent;
+            }
+            50% {
+                border-color: #00ff00;
+            }
+        }
+
+        .author {
+            text-align: right;
+            margin-top: 10px;
+            font-style: italic;
+            color: #00cc00;
+        }
+
+        /* Background Animations */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9) 0%, black 100%);
+        }
+
+        .background:before {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            animation: spin 6s linear infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Hyperlink Color */
+        a {
+            color: #00ff00; /* Green color */
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <h1>Pi Day 2025 - Games and Simulations</h1>
-    <p>Below are the interactive games and simulations developed for Pi Day 2025.</p>
-    
-    <ul class="game-list">
-        <li><a href="lightsout.html">Lights Out</a></li>
-        <li><a href="buffon/buffon.html">Buffon's Needle simulation to approximate &pi;</a></li>
-        <li><a href="frogchess/frogchess.html">Frog Chessboard game</a></li>
-        <!-- More games will be added here -->
-    </ul>
-    
-    <hr>
-
-    <div class="footer">
-        <p>Developed by: Sandipan Samanta [<a href="https://sandipan04.github.io/webpage">Webpage</a>]</p>
-        <p>Email: <a href="mailto:sandipan.samanta@niser.ac.in">sandipan.samanta@niser.ac.in</a></p>
+    <!-- Matrix Animation -->
+    <div class="matrix">
+        <canvas id="matrixCanvas"></canvas>
+        <div class="welcome">WELCOME!</div>
     </div>
+
+    <!-- Background Animation -->
+    <div class="background"></div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="header">Pi Day 2025 - Games and Simulations</div>
+        <div class="quote-container">
+             <li><a href="lightsout.html">Lights Out</a></li>
+        </div>
+        <div class="quote-container">
+            <li><a href="buffon/buffon.html">Buffon's Needle simulation to approximate &pi;</a></li>
+        </div>
+        <div class="quote-container">
+            <li><a href="frogchess.html">Frog Chessboard game</a></li>
+        </div>
+        <div class="quote-container">
+            <li><a href="sierspinski.html">Sierspinski's Triangle</a></li>
+        </div>
+        <div class="quote-container">
+            <li><a href="knight.html">The Trapped Knight</a></li>
+        </div>
+                <!-- Add more quotes as needed -->
+    </div>
+
+    <script>
+        // Matrix Animation
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const fontSize = 16;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff00';
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = String.fromCharCode(0x30a0 + Math.random() * 96);
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // Transition to Main Content
+        setTimeout(() => {
+            document.querySelector('.matrix').style.display = 'none';
+            document.querySelector('.content').style.display = 'block';
+        }, 5000);
+    </script>
 </body>
 </html>
+

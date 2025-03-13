@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierpiński Triangle - Chaos Game</title>
+    <style>
+        /* General Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #000; /* Dark Mode Background */
+            color: #00ff00; /* Glowing Green Text */
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: black;
+            border: 2px solid #00ff00;
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.5);
+        }
+
+        button, input {
+            background: black;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.5);
+        }
+
+        label {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chaosCanvas"></canvas>
+    <div>
+        <label for="iterations">Iterations:</label>
+        <input type="number" id="iterations" value="50000" min="1000">
+        <button onclick="startChaosGame()">Start</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("chaosCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 600;
+        canvas.height = 520;
+
+        const vertices = [
+            { x: canvas.width / 2, y: 20 },
+            { x: 20, y: canvas.height - 20 },
+            { x: canvas.width - 20, y: canvas.height - 20 }
+        ];
+        
+        let currentPoint = { x: Math.random() * canvas.width, y: Math.random() * canvas.height };
+        let iterationCount = 0;
+        let maxIterations = 50000;
+        let startTime;
+        const runTime = 15000; // 15 seconds
+
+        function drawTriangle() {
+            ctx.strokeStyle = "#00ff00";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(vertices[0].x, vertices[0].y);
+            ctx.lineTo(vertices[1].x, vertices[1].y);
+            ctx.lineTo(vertices[2].x, vertices[2].y);
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        function drawPoint(x, y) {
+            ctx.fillStyle = "#00ff00";
+            ctx.fillRect(x, y, 1, 1);
+        }
+        
+        function chaosGame() {
+            let elapsedTime = Date.now() - startTime;
+            let fractionComplete = Math.min(elapsedTime / runTime, 1);
+            let targetIterations = Math.floor(fractionComplete * maxIterations);
+            
+            while (iterationCount < targetIterations) {
+                const vertex = vertices[Math.floor(Math.random() * 3)];
+                currentPoint.x = (currentPoint.x + vertex.x) / 2;
+                currentPoint.y = (currentPoint.y + vertex.y) / 2;
+                drawPoint(currentPoint.x, currentPoint.y);
+                iterationCount++;
+            }
+            
+            if (iterationCount < maxIterations) {
+                requestAnimationFrame(chaosGame);
+            }
+        }
+
+        function startChaosGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawTriangle();
+            iterationCount = 0;
+            maxIterations = parseInt(document.getElementById("iterations").value) || 50000;
+            startTime = Date.now();
+            requestAnimationFrame(chaosGame);
+        }
+    </script>
+</body>
+</html>
