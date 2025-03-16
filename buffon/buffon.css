@@ -30,6 +30,7 @@ body, html {
     background: #ffffff;
     border-radius: 10px;
     padding: 10px;
+    border: 2px white;
     margin-bottom: 20px;
 }
 
